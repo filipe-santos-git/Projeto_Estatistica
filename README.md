@@ -1,1 +1,1 @@
-# Projeto_Estat-stica
+# Projeto_Estatistica
