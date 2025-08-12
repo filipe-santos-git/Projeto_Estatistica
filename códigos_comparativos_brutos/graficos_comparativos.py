@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # pasta de saída
-pasta = Path("graficos/separados")
+pasta = Path("graficos/gerais")
 pasta.mkdir(parents=True, exist_ok=True)
 
 df = pd.read_csv("estatisticas_publico_mensal.csv")
