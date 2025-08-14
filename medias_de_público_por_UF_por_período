@@ -1,0 +1,51 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
+import math
+ 
+
+df = pd.read_csv("estatisticas_por_UF_mensal.csv")
+df["UF"] = df["UF"].astype(str)
+df["Mes"] = df["Mes"].astype(str)            
+df["Media_Publico"] = pd.to_numeric(df["Media_Publico"], errors="coerce")
+
+periodos = [
+    ("2017–2019", "2017-01", "2019-12"),
+    ("2020–2021", "2020-01", "2021-12"),
+    ("2022–2025", "2022-01", "2025-06"),  
+]
+
+saida = Path("graficos/medias_por_periodo_por_UF")
+saida.mkdir(parents=True, exist_ok=True)
+
+tabela_out = []
+
+for uf, bloco in df.groupby("UF", sort=True):
+    linhas = []
+    for nome, inicio, fim in periodos:
+        separador = (bloco["Mes"] >= inicio) & (bloco["Mes"] <= fim)
+        media_das_medias = bloco.loc[separador, "Media_Publico"].mean()
+        tabela_out.append({
+            "UF": uf,
+            "Periodo": nome,
+            "Media_das_Medias": round(float(media_das_medias), 2)
+        })
+        linhas.append((nome, float(media_das_medias)))
+
+    # gráfico por UF 
+    labels = [n for n, _ in linhas]
+    valores = [v for _, v in linhas]
+    plt.figure(figsize=(8, 5))
+    plt.bar(labels, valores)
+    plt.title(f"{uf} — Média das médias por período")
+    plt.xlabel("Período")
+    plt.ylabel("Média das médias (público)")
+    for x, y in zip(labels, valores):
+        plt.text(x, y, f"{y:.0f}", ha="center", va="bottom")
+    plt.tight_layout()
+    plt.savefig(saida / f"{uf}_medias_por_periodo.png", dpi=150)
+    plt.close()
+
+
+pd.DataFrame(tabela_out).to_csv("medias_das_medias_por_periodo_por_UF.csv", index=False)
+print("OK: gráficos em", saida.resolve(), "e CSV 'medias_das_medias_por_periodo_por_UF.csv'")
